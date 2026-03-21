@@ -4,6 +4,8 @@ import com.livraison.livraison.model.Livraison;
 import org.apache.poi.ss.usermodel.*;
 
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +30,20 @@ public class ExcelImportService {
                 l.setNumeroBc(getCell(row, 1));
                 l.setClient(getCell(row, 2));
                 l.setTelephone(getCell(row, 3));
-                l.setVille(getCell(row, 4));
-                l.setLivreur(getCell(row, 5));
+                l.setLivreur(getCell(row, 4));
+                l.setVille(getCell(row, 5));
+
+                // 📅 DATE
+                Cell dateCell = row.getCell(6);
+                if (dateCell != null && dateCell.getCellType() == CellType.NUMERIC) {
+
+                    LocalDate date = dateCell.getDateCellValue()
+                            .toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+
+                    l.setDateLivraison(date);
+                }
 
                 l.setStatut("EN_ATTENTE");
 
