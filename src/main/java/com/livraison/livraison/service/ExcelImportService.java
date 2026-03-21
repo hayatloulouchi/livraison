@@ -2,61 +2,52 @@ package com.livraison.livraison.service;
 
 import com.livraison.livraison.model.Livraison;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ExcelImportService {
 
-    public static List<Livraison> importExcel(InputStream is) throws Exception {
-
-        Workbook workbook = new XSSFWorkbook(is);
-        Sheet sheet = workbook.getSheetAt(0);
+    public static List<Livraison> importExcel(InputStream is) {
 
         List<Livraison> livraisons = new ArrayList<>();
 
-        DataFormatter formatter = new DataFormatter();
+        try {
+            Workbook workbook = WorkbookFactory.create(is);
+            Sheet sheet = workbook.getSheetAt(0);
 
-        for (Row row : sheet) {
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
 
-            // ignorer la première ligne (entêtes)
-            if (row.getRowNum() == 0) continue;
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
 
-            Livraison l = new Livraison();
+                Livraison l = new Livraison();
 
-l.setTiers(formatter.formatCellValue(row.getCell(0)));
-l.setNumeroBc(formatter.formatCellValue(row.getCell(1)));
-l.setClient(formatter.formatCellValue(row.getCell(2)));
-l.setTelephone(formatter.formatCellValue(row.getCell(3)));
-l.setLivreur(formatter.formatCellValue(row.getCell(4)));
-l.setVille(formatter.formatCellValue(row.getCell(5)));
+                l.setTiers(getCell(row, 0));
+                l.setNumeroBc(getCell(row, 1));
+                l.setClient(getCell(row, 2));
+                l.setTelephone(getCell(row, 3));
+                l.setVille(getCell(row, 4));
+                l.setLivreur(getCell(row, 5));
 
-Cell dateCell = row.getCell(6);
+                l.setStatut("EN_ATTENTE");
 
-    
-
-           
-            if (dateCell != null && dateCell.getCellType() == CellType.NUMERIC) {
-
-                LocalDate date = dateCell.getDateCellValue()
-                        .toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate();
-
-                l.setDateLivraison(date);
+                livraisons.add(l);
             }
 
-            l.setStatut("EN_ATTENTE");
+            workbook.close();
 
-            livraisons.add(l);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        workbook.close();
-
         return livraisons;
+    }
+
+    private static String getCell(Row row, int index) {
+        Cell cell = row.getCell(index);
+        if (cell == null) return "";
+        return cell.toString();
     }
 }
