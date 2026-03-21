@@ -3,11 +3,10 @@ package com.livraison.livraison.controller;
 import com.livraison.livraison.model.Livraison;
 import com.livraison.livraison.repository.LivraisonRepository;
 import com.livraison.livraison.service.ExcelImportService;
-import org.springframework.web.multipart.MultipartFile;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,22 +20,59 @@ public class AdminController {
         this.repo = repo;
     }
 
-    // 📋 PAGE ADMIN
+    // 📋 PAGE ADMIN + RECHERCHE + FILTRE + STATS
     @GetMapping("/admin")
-    public String admin(Model model){
+    public String admin(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String livreur,
+            Model model){
 
         List<Livraison> livraisons = repo.findAll();
+
+        // 🔍 Recherche
+        if(keyword != null && !keyword.isEmpty()){
+            livraisons = livraisons.stream()
+                    .filter(l ->
+                            l.getClient().toLowerCase().contains(keyword.toLowerCase()) ||
+                            l.getNumeroBc().toLowerCase().contains(keyword.toLowerCase())
+                    )
+                    .toList();
+        }
+
+        // 👤 Filtre livreur
+        if(livreur != null && !livreur.isEmpty()){
+            livraisons = livraisons.stream()
+                    .filter(l -> livreur.equalsIgnoreCase(l.getLivreur()))
+                    .toList();
+        }
+
+        // 📊 Dashboard
+        long total = livraisons.size();
+
+        long enAttente = livraisons.stream()
+                .filter(l -> "EN_ATTENTE".equals(l.getStatut()))
+                .count();
+
+        long terminee = livraisons.stream()
+                .filter(l -> "TERMINEE".equals(l.getStatut()))
+                .count();
+
         model.addAttribute("livraisons", livraisons);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("livreur", livreur);
+
+        model.addAttribute("total", total);
+        model.addAttribute("enAttente", enAttente);
+        model.addAttribute("terminee", terminee);
 
         return "admin";
     }
 
-    // ➕ AJOUTER LIVRAISON
+    // ➕ AJOUTER
     @PostMapping("/admin/ajouter")
     public String ajouter(Livraison livraison){
 
         livraison.setStatut("EN_ATTENTE");
-
         repo.save(livraison);
 
         return "redirect:/admin";
@@ -51,35 +87,47 @@ public class AdminController {
         return "redirect:/admin";
     }
 
-    // ✏ MODIFIER STATUT
+    // ✏ EDIT
     @GetMapping("/admin/edit/{id}")
-public String editLivraison(@PathVariable Long id, Model model){
+    public String editLivraison(@PathVariable Long id, Model model){
 
-    Livraison livraison = repo.findById(id).orElse(null);
+        Livraison livraison = repo.findById(id).orElse(null);
+        model.addAttribute("livraison", livraison);
 
-    model.addAttribute("livraison", livraison);
+        return "modifier";
+    }
 
-    return "modifier";
-}
-@PostMapping("/admin/update")
-public String updateLivraison(Livraison livraison){
+    // 💾 UPDATE
+    @PostMapping("/admin/update")
+    public String updateLivraison(Livraison livraison){
 
-    repo.save(livraison);
+        repo.save(livraison);
 
-    return "redirect:/admin";
-}
+        return "redirect:/admin";
+    }
+
+    // ✔ LIVRÉ
+    @PostMapping("/admin/livrer/{id}")
+    public String livrer(@PathVariable Long id){
+
+        Livraison l = repo.findById(id).orElse(null);
+
+        if(l != null){
+            l.setStatut("TERMINEE");
+            repo.save(l);
+        }
+
+        return "redirect:/admin";
+    }
+
     // 📥 IMPORT EXCEL
     @PostMapping("/admin/import")
     public String importExcel(@RequestParam("file") MultipartFile file){
 
         try {
-
             List<Livraison> list = ExcelImportService.importExcel(file.getInputStream());
-
             repo.saveAll(list);
-
         } catch (Exception e) {
-
             e.printStackTrace();
         }
 

@@ -16,13 +16,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Utilisateur login(@RequestBody Utilisateur u){
+public Utilisateur login(@RequestBody Utilisateur u){
 
-        return repo.findByUsernameAndPassword(
-                u.getUsername(),
-                u.getPassword()
-        );
+    Utilisateur user = repo.findByUsername(u.getUsername());
 
+    if(user != null && user.getPassword().equals(u.getPassword())){
+        return user;
     }
 
+    return null;
+}
 }

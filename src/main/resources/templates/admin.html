@@ -2,68 +2,71 @@
 <html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-
 <meta charset="UTF-8">
 <title>Admin Livraison</title>
 
 <style>
-
 body{
-font-family:Arial;
-background:#f4f6f9;
-margin:0;
+    font-family:Arial;
+    background:#f4f6f9;
+    margin:0;
 }
 
 .header{
-background:#2c3e50;
-color:white;
-padding:20px;
-font-size:22px;
+    background:#2c3e50;
+    color:white;
+    padding:20px;
+    font-size:22px;
 }
 
 .container{
-padding:30px;
+    padding:30px;
 }
 
 .card{
-background:white;
-padding:20px;
-margin:10px;
-border-radius:10px;
-box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    background:white;
+    padding:20px;
+    margin:10px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 
 table{
-border-collapse:collapse;
-width:100%;
+    border-collapse:collapse;
+    width:100%;
 }
 
 th,td{
-padding:10px;
-text-align:center;
+    padding:10px;
+    text-align:center;
 }
 
 button{
-padding:6px 12px;
-background:#27ae60;
-color:white;
-border:none;
-border-radius:5px;
-cursor:pointer;
+    padding:6px 12px;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
 }
 
-a{
-color:red;
-text-decoration:none;
+.btn-add{
+    background:#27ae60;
+}
+
+.btn-livrer{
+    background:#2980b9;
+}
+
+.btn-delete{
+    color:red;
+    text-decoration:none;
 }
 
 input{
-padding:6px;
-margin:5px;
+    padding:6px;
+    margin:5px;
 }
-
 </style>
-
 </head>
 
 <body>
@@ -73,19 +76,13 @@ margin:5px;
 </div>
 
 <div class="container">
-
 <div class="card">
 
 <h3>Importer livraisons Excel</h3>
 
 <form action="/admin/import" method="post" enctype="multipart/form-data">
-
-<input type="file" name="file" required>
-
-<button type="submit">
-Import Excel
-</button>
-
+    <input type="file" name="file" required>
+    <button class="btn-add">Import Excel</button>
 </form>
 
 <br>
@@ -93,21 +90,14 @@ Import Excel
 <h3>Ajouter une livraison</h3>
 
 <form action="/admin/ajouter" method="post">
+    <input type="text" name="numeroBc" placeholder="Numéro BC" required>
+    <input type="text" name="client" placeholder="Client" required>
+    <input type="text" name="telephone" placeholder="Téléphone">
+    <input type="text" name="ville" placeholder="Ville" required>
+    <input type="text" name="livreur" placeholder="Livreur">
+    <input type="date" name="dateLivraison">
 
-<input type="text" name="numeroBc" placeholder="Numéro BC" required>
-
-<input type="text" name="client" placeholder="Client" required>
-
-<input type="text" name="ville" placeholder="Ville" required>
-
-<input type="text" name="livreur" placeholder="Livreur">
-
-<input type="date" name="dateLivraison">
-
-<button type="submit">
-Ajouter
-</button>
-
+    <button class="btn-add">Ajouter</button>
 </form>
 
 <br>
@@ -116,11 +106,8 @@ Ajouter
 
 <table border="1">
 
-
 <thead>
-
 <tr>
-
 <th>Tiers</th>
 <th>ID</th>
 <th>Numéro BC</th>
@@ -131,39 +118,53 @@ Ajouter
 <th>Statut</th>
 <th>Date livraison</th>
 <th>Action</th>
-
 </tr>
-
 </thead>
-
-<tbody>
 
 <tbody>
 
 <tr th:each="l : ${livraisons}">
 
 <td th:text="${l.tiers}"></td>
-
 <td th:text="${l.id}"></td>
-
 <td th:text="${l.numeroBc}"></td>
-
 <td th:text="${l.client}"></td>
-
 <td th:text="${l.telephone}"></td>
-
 <td th:text="${l.livreur}"></td>
-
 <td th:text="${l.ville}"></td>
 
-<td th:text="${l.statut}"></td>
-<td th:text="${l.dateLivraison}"></td>
+<!-- Statut avec couleur -->
 <td>
-<a th:href="@{'/admin/modifier/' + ${l.id}}">✏ Modifier</a>
-|
-<a th:href="@{'/admin/supprimer/' + ${l.id}}">❌ Supprimer</a>
+    <span th:if="${l.statut == 'EN_ATTENTE'}" style="color:orange;">EN_ATTENTE</span>
+    <span th:if="${l.statut == 'TERMINEE'}" style="color:green;">TERMINEE</span>
 </td>
 
+<td th:text="${l.dateLivraison}"></td>
+
+<td>
+
+    <!-- ✔ BOUTON LIVRÉ -->
+    <form th:action="@{'/admin/livrer/' + ${l.id}}" method="post" style="display:inline;">
+    <button style="background:#2980b9;color:white;border:none;padding:6px 12px;border-radius:5px;">
+        ✔ Livré
+    </button>
+</form>
+
+    |
+
+    <!-- ✏ Modifier -->
+    <a th:href="@{'/admin/edit/' + ${l.id}}">✏ Modifier</a>
+
+    |
+
+    <!-- ❌ Supprimer -->
+    <a th:href="@{'/admin/supprimer/' + ${l.id}}"
+       onclick="return confirm('Supprimer cette livraison ?')"
+       class="btn-delete">
+       ❌ Supprimer
+    </a>
+
+</td>
 
 </tr>
 
@@ -172,7 +173,6 @@ Ajouter
 </table>
 
 </div>
-
 </div>
 
 </body>
