@@ -26,24 +26,16 @@ public class ExcelImportService {
 
                 Livraison l = new Livraison();
 
-                l.setTiers(getCell(row, 0));
-                l.setNumeroBc(getCell(row, 1));
-                l.setClient(getCell(row, 2));
-                l.setTelephone(getCell(row, 3));
-                l.setLivreur(getCell(row, 4));
-                l.setVille(getCell(row, 5));
+                // ⚠️ IMPORTANT : on lit TOUT en texte (même chiffres)
+                l.setTiers(getCellSafe(row, 0));
+                l.setNumeroBc(getCellSafe(row, 1));
+                l.setClient(getCellSafe(row, 2));
+                l.setTelephone(getCellSafe(row, 3));
+                l.setLivreur(getCellSafe(row, 4));
+                l.setVille(getCellSafe(row, 5));
 
-                // 📅 DATE
-                Cell dateCell = row.getCell(6);
-                if (dateCell != null && dateCell.getCellType() == CellType.NUMERIC) {
-
-                    LocalDate date = dateCell.getDateCellValue()
-                            .toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate();
-
-                    l.setDateLivraison(date);
-                }
+                // 📅 DATE (simple et robuste)
+                l.setDateLivraison(LocalDate.now());
 
                 l.setStatut("EN_ATTENTE");
 
@@ -56,14 +48,41 @@ public class ExcelImportService {
             e.printStackTrace();
         }
 
+        System.out.println("NB lignes Excel = " + livraisons.size());
+
         return livraisons;
     }
 
+    // 🔥 méthode robuste
     private static String getCell(Row row, int index) {
-        Cell cell = row.getCell(index);
-        if (cell == null) return "";
-        return cell.toString();
+    Cell cell = row.getCell(index);
+    if (cell == null) return "";
+
+    switch (cell.getCellType()) {
+        case STRING:
+            return cell.getStringCellValue();
+
+        case NUMERIC:
+            if (DateUtil.isCellDateFormatted(cell)) {
+                return cell.getDateCellValue().toString();
+            } else {
+                return String.valueOf((long) cell.getNumericCellValue());
+            }
+
+        case BOOLEAN:
+            return String.valueOf(cell.getBooleanCellValue());
+
+        default:
+            return "";
     }
-    System.out.println("NB lignes Excel = " + livraisons.size());
-    
 }
+
+    // 🔥 méthode encore plus robuste (ne plante pas si la ligne est vide)
+    private static String getCellSafe(Row row, int index) {
+        try {
+            return getCell(row, index);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+}                                       

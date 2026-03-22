@@ -2,6 +2,8 @@ package com.livraison.livraison.controller;
 
 import com.livraison.livraison.model.Utilisateur;
 import com.livraison.livraison.repository.UtilisateurRepository;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,14 +18,17 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-public Utilisateur login(@RequestBody Utilisateur u){
+public ResponseEntity<?> login(@RequestBody Utilisateur u){
 
-    Utilisateur user = repo.findByUsername(u.getUsername());
+    Utilisateur user = repo.findByUsernameAndPassword(
+            u.getUsername(),
+            u.getPassword()
+    );
 
-    if(user != null && user.getPassword().equals(u.getPassword())){
-        return user;
+    if(user == null){
+        return ResponseEntity.status(401).body("Login incorrect");
     }
 
-    return null;
+    return ResponseEntity.ok(user);
 }
 }
