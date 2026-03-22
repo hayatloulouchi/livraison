@@ -2,6 +2,7 @@ package com.livraison.livraison.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 public class Livraison {
@@ -18,6 +19,7 @@ public class Livraison {
     private String livreur;
     private String statut;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd") // ✅ ICI
     private LocalDate dateLivraison;
 
     public Long getId() {
