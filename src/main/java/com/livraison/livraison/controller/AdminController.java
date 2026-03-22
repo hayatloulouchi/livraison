@@ -120,25 +120,26 @@ public String admin(
     }
 
     // 💾 UPDATE
-    @PostMapping("/admin/update")
+   @PostMapping("/admin/update")
 public String updateLivraison(Livraison livraison){
 
     Livraison existing = repo.findById(livraison.getId()).orElse(null);
 
     if(existing != null){
+        existing.setTiers(livraison.getTiers());
         existing.setNumeroBc(livraison.getNumeroBc());
         existing.setClient(livraison.getClient());
         existing.setTelephone(livraison.getTelephone());
         existing.setVille(livraison.getVille());
         existing.setLivreur(livraison.getLivreur());
         existing.setDateLivraison(livraison.getDateLivraison());
-        existing.setTiers(livraison.getTiers());
 
         repo.save(existing);
     }
 
     return "redirect:/admin";
 }
+
 
     // ✔ LIVRÉ
     @PostMapping("/admin/livrer/{id}")
