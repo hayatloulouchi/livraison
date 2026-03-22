@@ -64,4 +64,6 @@ public class ExcelImportService {
         if (cell == null) return "";
         return cell.toString();
     }
+    System.out.println("NB lignes Excel = " + livraisons.size());
+    
 }
