@@ -121,16 +121,23 @@ public class AdminController {
     }
 
     // 📥 IMPORT EXCEL
+    
     @PostMapping("/admin/import")
-    public String importExcel(@RequestParam("file") MultipartFile file){
+public String importExcel(@RequestParam("file") MultipartFile file){
 
-        try {
-            List<Livraison> list = ExcelImportService.importExcel(file.getInputStream());
-            repo.saveAll(list);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    try {
+        List<Livraison> list = ExcelImportService.importExcel(file.getInputStream());
 
-        return "redirect:/admin";
+        System.out.println("AVANT SAVE = " + list.size());
+
+        repo.saveAll(list);
+
+        System.out.println("APRES SAVE = " + repo.count());
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    return "redirect:/admin";
+}
 }
