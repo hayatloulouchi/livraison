@@ -21,52 +21,74 @@ public class AdminController {
     }
 
     // 📋 PAGE ADMIN + RECHERCHE + FILTRE + STATS
-    @GetMapping("/admin")
-    public String admin(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String livreur,
-            Model model){
+   @GetMapping("/admin")
+public String admin(
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) String livreur,
+        @RequestParam(required = false) String tiers,
+        @RequestParam(required = false) String ville,
+        Model model){
 
-        List<Livraison> livraisons = repo.findAll();
+    List<Livraison> livraisons = repo.findAll();
 
-        // 🔍 Recherche
-        if(keyword != null && !keyword.isEmpty()){
-            livraisons = livraisons.stream()
-                    .filter(l ->
-                            l.getClient().toLowerCase().contains(keyword.toLowerCase()) ||
-                            l.getNumeroBc().toLowerCase().contains(keyword.toLowerCase())
-                    )
-                    .toList();
-        }
-
-        // 👤 Filtre livreur
-        if(livreur != null && !livreur.isEmpty()){
-            livraisons = livraisons.stream()
-                    .filter(l -> livreur.equalsIgnoreCase(l.getLivreur()))
-                    .toList();
-        }
-
-        // 📊 Dashboard
-        long total = livraisons.size();
-
-        long enAttente = livraisons.stream()
-                .filter(l -> "EN_ATTENTE".equals(l.getStatut()))
-                .count();
-
-        long terminee = livraisons.stream()
-                .filter(l -> "TERMINEE".equals(l.getStatut()))
-                .count();
-
-        model.addAttribute("livraisons", livraisons);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("livreur", livreur);
-
-        model.addAttribute("total", total);
-        model.addAttribute("enAttente", enAttente);
-        model.addAttribute("terminee", terminee);
-
-        return "admin";
+    // 🔍 Recherche (client + BC)
+    if(keyword != null && !keyword.isEmpty()){
+        livraisons = livraisons.stream()
+                .filter(l ->
+                        (l.getClient() != null && l.getClient().toLowerCase().contains(keyword.toLowerCase())) ||
+                        (l.getNumeroBc() != null && l.getNumeroBc().toLowerCase().contains(keyword.toLowerCase()))
+                )
+                .toList();
     }
+
+    // 👤 Filtre livreur
+    if(livreur != null && !livreur.isEmpty()){
+        livraisons = livraisons.stream()
+                .filter(l -> l.getLivreur() != null &&
+                        l.getLivreur().equalsIgnoreCase(livreur))
+                .toList();
+    }
+
+    // 🏢 Filtre tiers
+    if(tiers != null && !tiers.isEmpty()){
+        livraisons = livraisons.stream()
+                .filter(l -> l.getTiers() != null &&
+                        l.getTiers().equalsIgnoreCase(tiers))
+                .toList();
+    }
+
+    // 📍 Filtre ville
+    if(ville != null && !ville.isEmpty()){
+        livraisons = livraisons.stream()
+                .filter(l -> l.getVille() != null &&
+                        l.getVille().equalsIgnoreCase(ville))
+                .toList();
+    }
+
+    // 📊 Stats
+    long total = livraisons.size();
+
+    long enAttente = livraisons.stream()
+            .filter(l -> "EN_ATTENTE".equals(l.getStatut()))
+            .count();
+
+    long terminee = livraisons.stream()
+            .filter(l -> "TERMINEE".equals(l.getStatut()))
+            .count();
+
+    model.addAttribute("livraisons", livraisons);
+
+    model.addAttribute("keyword", keyword);
+    model.addAttribute("livreur", livreur);
+    model.addAttribute("tiers", tiers);
+    model.addAttribute("ville", ville);
+
+    model.addAttribute("total", total);
+    model.addAttribute("enAttente", enAttente);
+    model.addAttribute("terminee", terminee);
+
+    return "admin";
+}
 
     // ➕ AJOUTER
     @PostMapping("/admin/ajouter")
