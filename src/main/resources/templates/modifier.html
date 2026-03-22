@@ -74,12 +74,9 @@ width:100%;
 <input type="text" name="livreur" th:value="${livraison.livreur}">
 
 <label>Date livraison</label>
-<input type="date" name="dateLivraison"
-       th:value="${#temporals.format(livraison.dateLivraison, 'yyyy-MM-dd')}">
+<input type="date" name="dateLivraison" th:value="${livraison.dateLivraison}">
 
-<button type="submit">
-Enregistrer
-</button>
+<button type="submit">Enregistrer</button>
 
 </form>
 </div>
