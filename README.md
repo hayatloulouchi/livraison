@@ -2,7 +2,7 @@
 
 ```bash
 # Cloner le projet
-git clone https://github.com/HayatLoulouchi/livraison-app.git
+git clone https://github.com/HayatLoulouchi/livraison.git
 
 # Entrer dans le dossier
 cd livraison-app
