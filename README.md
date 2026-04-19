@@ -1,7 +1,7 @@
 ## ⚙️ Installation
 
 # Cloner le projet
-git clone https://github.com/ton-compte/livraison-app.git
+[git clone https://github.com/HayatLoulouchi/livraison-app.git
 
 # Entrer dans le dossier
 cd livraison-app
